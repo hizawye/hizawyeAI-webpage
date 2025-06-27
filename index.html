@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hizawye AI: An Interactive Exploration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: Warm Neutral Tech
+    Application Structure Plan: A single-page application with a fixed sidebar for navigation and a main content area. The structure is thematic, not linear, to encourage exploration.
+    1.  **Home:** A compelling introduction.
+    2.  **Architecture:** An interactive diagram explaining the system's components (Mind, Memory, Thinker). Clicking reveals details.
+    3.  **The Consciousness Loop:** The core interactive element. A simulated dashboard visualizing the AI's internal states (Pain, Boredom, Curiosity), goals, and thought process in real-time. Buttons allow the user to trigger events and observe the AI's response, making the methodology tangible.
+    4.  **Findings:** A summary of the results and challenges.
+    This structure was chosen to transform the dense academic text into an engaging, explorable experience, with the interactive simulation being the key to understanding the AI's emergent behaviors.
+
+    Visualization & Content Choices: 
+    - Report Info: System Architecture -> Goal: Organize/Inform -> Viz: Interactive HTML/CSS diagram -> Interaction: Click to expand details -> Justification: More intuitive than text.
+    - Report Info: Consciousness Loop Methodology -> Goal: Demonstrate Change -> Viz: Interactive dashboard with Chart.js bar charts for states, a text log for thoughts, and a simplified HTML/CSS graph -> Interaction: "Run Cycle" button triggers JS simulation of the loop, updating all visuals -> Justification: Makes the abstract process concrete and observable.
+    - Report Info: Key Findings -> Goal: Inform -> Viz: Two-column layout with icons -> Interaction: None -> Justification: Clear summary of outcomes.
+    
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. 
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f5; /* Zinc 100 */
+        }
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-link.active {
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+        }
+        .nav-link:not(.active):hover {
+            background-color: #e4e4e7; /* Zinc 200 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 60px;
+            width: 100%;
+        }
+        .graph-node {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .graph-node.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.7);
+            border-color: #4f46e5;
+        }
+        .graph-link {
+            position: absolute;
+            background-color: #a1a1aa; /* Zinc 400 */
+            height: 2px;
+            transform-origin: left;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-zinc-100 text-zinc-800">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-white border-r border-zinc-200 p-4 md:p-6 flex-shrink-0">
+            <h1 class="text-2xl font-bold text-indigo-600 mb-8">Hizawye AI</h1>
+            <nav id="navigation" class="flex flex-row md:flex-col gap-2">
+                <a href="#home" class="nav-link text-left p-3 rounded-lg font-medium">Introduction</a>
+                <a href="#architecture" class="nav-link text-left p-3 rounded-lg font-medium">Architecture</a>
+                <a href="#simulation" class="nav-link text-left p-3 rounded-lg font-medium">The Consciousness Loop</a>
+                <a href="#findings" class="nav-link text-left p-3 rounded-lg font-medium">Findings</a>
+            </nav>
+            <div class="mt-auto pt-8 text-xs text-zinc-400 hidden md:block">
+                <p>&copy; 2025 Abderrahim Safou</p>
+                <p>Independent Research</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6 md:p-10">
+            
+            <!-- Home Section -->
+            <section id="home" class="content-section">
+                <h2 class="text-4xl font-bold mb-4">Hizawye AI: A Framework for Simulating Consciousness</h2>
+                <p class="text-lg text-zinc-600 mb-6">This interactive experience explores the concepts presented in the research paper on Hizawye AI. It translates the theoretical framework into a dynamic visualization, allowing you to explore the system's architecture and observe a simulation of its emergent, consciousness-like behaviors.</p>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                    <h3 class="text-xl font-semibold mb-2 text-indigo-600">Abstract</h3>
+                    <p class="text-zinc-700 leading-relaxed">The project presents a computational framework to simulate key functional aspects of consciousness, inspired by Global Workspace Theory (GWT). The system models an autonomous agent driven by internal states like curiosity, boredom, and pain. It utilizes a modular "mind" (JSON files), a dynamic knowledge graph for memory, and a central reasoning loop using a small LLM. The AI exhibits emergent behaviors like goal-oriented focus, idle wandering, and strategic failure, where it learns to break down complex problems in response to repeated failure.</p>
+                </div>
+            </section>
+
+            <!-- Architecture Section -->
+            <section id="architecture" class="content-section">
+                <h2 class="text-4xl font-bold mb-6">System Architecture</h2>
+                <p class="text-lg text-zinc-600 mb-8">The framework is composed of three primary, decoupled components. This modularity allows for transparency and independent development. Click on each component to learn more.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div id="arch-mind" class="arch-component bg-white p-6 rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-indigo-500 transition">
+                        <span class="text-5xl">📄</span>
+                        <h3 class="text-2xl font-semibold mt-4">The Mind</h3>
+                        <p class="text-zinc-500">Structured State Storage</p>
+                    </div>
+                    <div id="arch-memory" class="arch-component bg-white p-6 rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-indigo-500 transition">
+                        <span class="text-5xl">🧠</span>
+                        <h3 class="text-2xl font-semibold mt-4">The Memory</h3>
+                        <p class="text-zinc-500">Knowledge Graph</p>
+                    </div>
+                     <div id="arch-thinker" class="arch-component bg-white p-6 rounded-lg shadow-sm border-2 border-transparent cursor-pointer hover:border-indigo-500 transition">
+                        <span class="text-5xl">⚙️</span>
+                        <h3 class="text-2xl font-semibold mt-4">The Thinker</h3>
+                        <p class="text-zinc-500">Consciousness Loop</p>
+                    </div>
+                </div>
+
+                <div id="architecture-details" class="mt-8 bg-white p-8 rounded-lg shadow-sm border border-zinc-200 min-h-[200px]">
+                    <p class="text-zinc-500">Select a component above to view its details.</p>
+                </div>
+            </section>
+
+            <!-- Simulation Section -->
+            <section id="simulation" class="content-section">
+                 <h2 class="text-4xl font-bold mb-6">The Consciousness Loop: Interactive Simulation</h2>
+                 <p class="text-lg text-zinc-600 mb-8">This dashboard simulates the Hizawye AI's life-cycle. Press "Run Cycle" to advance the AI's thought process one step at a time. Observe how its internal states change and how it adapts its goals and strategies based on its experiences.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column: Controls & State -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                            <h3 class="text-xl font-semibold mb-4">Controls</h3>
+                            <div class="flex gap-4">
+                               <button id="run-cycle-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition">Run Cycle</button>
+                               <button id="reset-sim-btn" class="w-full bg-zinc-200 text-zinc-800 font-bold py-3 px-4 rounded-lg hover:bg-zinc-300 transition">Reset</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                            <h3 class="text-xl font-semibold mb-4">Internal State</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="font-medium text-zinc-700">Curiosity</label>
+                                    <div class="chart-container"><canvas id="curiosityChart"></canvas></div>
+                                </div>
+                                 <div>
+                                    <label class="font-medium text-zinc-700">Boredom</label>
+                                    <div class="chart-container"><canvas id="boredomChart"></canvas></div>
+                                </div>
+                                 <div>
+                                    <label class="font-medium text-zinc-700">Pain</label>
+                                    <div class="chart-container"><canvas id="painChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                             <h3 class="text-xl font-semibold mb-2">Current Focus</h3>
+                             <p id="sim-focus" class="text-2xl font-bold text-indigo-600">-</p>
+                        </div>
+                    </div>
+                    <!-- Right Column: Goals & Log -->
+                    <div class="lg:col-span-2 space-y-6">
+                         <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                            <h3 class="text-xl font-semibold mb-2">Active Goal</h3>
+                            <p id="sim-goal" class="text-zinc-600 font-mono">-</p>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                            <h3 class="text-xl font-semibold mb-4">Thought & Action Log</h3>
+                            <div id="sim-log" class="h-48 bg-zinc-900 text-white font-mono text-sm p-4 rounded-md overflow-y-auto">
+                                <p class="text-zinc-400">Simulation not started. Press "Run Cycle".</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-zinc-200">
+                            <h3 class="text-xl font-semibold mb-4">Simplified Memory Map</h3>
+                            <div id="memory-map-container" class="relative h-64 w-full">
+                                <!-- JS will render nodes and links here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Findings Section -->
+            <section id="findings" class="content-section">
+                <h2 class="text-4xl font-bold mb-6">Key Findings & Future Work</h2>
+                <p class="text-lg text-zinc-600 mb-8">Analysis of the AI's behavior revealed key successes and significant challenges, paving the way for future research.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-green-600">✅ Success: Emergent Strategic Failure</h3>
+                        <p class="text-zinc-700 leading-relaxed">A key finding was the successful execution of the strategic failure mechanism. When faced with a repeated inability to understand a concept, the AI's "pain" state would cross a threshold. This triggered a new, meta-goal to "break down" the difficult concept into simpler parts. This demonstrates a powerful, emergent problem-solving capability that was not explicitly programmed but arose from the interaction of the system's simple rules.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-amber-600">⚠️ Challenge: Brittle Reasoning Core</h3>
+                        <p class="text-zinc-700 leading-relaxed">The primary source of failure was the brittleness of the small LLM. The logs are filled with instances where it would get confused and echo its instructions instead of performing the task. This highlights a key challenge: the control script's intelligence is handicapped by the limitations of its reasoning tool. The system required multiple validation and parsing logic upgrades to handle malformed data from its own "brain".</p>
+                    </div>
+                </div>
+
+                 <div class="mt-12 bg-white p-8 rounded-lg shadow-sm border border-zinc-200">
+                    <h3 class="text-2xl font-semibold mb-4 text-indigo-600">🚀 Future Work</h3>
+                    <ul class="list-disc list-inside space-y-3 text-zinc-700">
+                        <li><b>Upgrading the Reasoning Core:</b> Swapping `tinyllama` with a more powerful, instruction-following LLM would be the most significant improvement.</li>
+                        <li><b>Refining Internal States:</b> "Pain" could be divided into "confusion pain" (from failed tasks) and "conflict pain" (from discovering contradictory beliefs).</li>
+                        <li><b>Sensory Input:</b> Giving the AI the ability to "read" external data (e.g., a Wikipedia article) to incorporate new, external knowledge into its memory graph.</li>
+                        <li><b>Memory Forgetting:</b> Implementing a "memory decay" mechanism, where nodes and connections that are not frequently visited become weaker over time.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA & STATE ---
+            const architectureContent = {
+                'arch-mind': {
+                    title: 'The Mind: Structured State Storage',
+                    content: `The AI's mind is externalized into human-readable JSON files. This makes its internal state transparent and easy to modify for experiments.<br><br>
+                    - <strong>state.json</strong>: Holds core emotional drivers like Curiosity, Boredom, and Pain.<br>
+                    - <strong>beliefs.json</strong>: Stores foundational axioms about itself and the world.<br>
+                    - <strong>goals.json</strong>: A task list separating active and completed goals.`
+                },
+                'arch-memory': {
+                    title: 'The Memory: Knowledge Graph',
+                    content: `The memory is a knowledge graph (using Python's networkx library).<br><br>
+                    - <strong>Nodes</strong>: Represent concepts (e.g., 'creativity'). Each node can store a 'description' attribute, signifying the AI's understanding.<br>
+                    - <strong>Edges</strong>: Represent relationships between concepts (e.g., 'knowledge' enables 'creativity').<br><br>This structure allows the AI to traverse its own "mind," simulating a train of thought.`
+                },
+                'arch-thinker': {
+                    title: 'The Thinker: Consciousness Loop',
+                    content: `The core of the system is the <strong>hizawye_ai.py</strong> script, which runs a continuous loop to simulate consciousness. It is responsible for:<br><br>
+                    1. Managing the AI's mind state.<br>
+                    2. Orchestrating focus and goal-setting.<br>
+                    3. Interfacing with the LLM reasoning core.<br>
+                    4. Validating the LLM's output.<br>
+                    5. Executing state changes based on success or failure.`
+                }
+            };
+
+            let simData = {
+                state: { curiosity: 65, boredom: 0, pain: 0 },
+                goals: { active: ["Deepen understanding of the concept: 'belief system'"], completed: [] },
+                memory: {
+                    nodes: {
+                        'belief system': { x: 50, y: 20 },
+                        'knowledge': { x: 20, y: 50 },
+                        'delusions': { x: 80, y: 50 },
+                        'creativity': { x: 20, y: 80 },
+                    },
+                    links: [
+                        { source: 'knowledge', target: 'belief system' },
+                        { source: 'belief system', target: 'delusions' },
+                        { source: 'knowledge', target: 'creativity' },
+                    ]
+                },
+                focus: null,
+            };
+
+            const initialState = JSON.parse(JSON.stringify(simData));
+            let charts = {};
+
+            // --- NAVIGATION ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function updateContent(hash) {
+                hash = hash || '#home';
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === hash);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', '#' + section.id === hash);
+                });
+                 window.scrollTo(0, 0);
+            }
+            
+            window.addEventListener('hashchange', () => updateContent(window.location.hash));
+            updateContent(window.location.hash);
+
+
+            // --- ARCHITECTURE SECTION ---
+            const archComponents = document.querySelectorAll('.arch-component');
+            const detailsContainer = document.getElementById('architecture-details');
+
+            archComponents.forEach(component => {
+                component.addEventListener('click', () => {
+                    archComponents.forEach(c => c.classList.remove('border-indigo-500'));
+                    component.classList.add('border-indigo-500');
+                    const contentData = architectureContent[component.id];
+                    detailsContainer.innerHTML = `
+                        <h3 class="text-2xl font-semibold mb-4 text-indigo-600">${contentData.title}</h3>
+                        <p class="text-zinc-700 leading-relaxed">${contentData.content}</p>
+                    `;
+                });
+            });
+
+            // --- SIMULATION SECTION ---
+            const runCycleBtn = document.getElementById('run-cycle-btn');
+            const resetSimBtn = document.getElementById('reset-sim-btn');
+            const simLog = document.getElementById('sim-log');
+            const simGoalEl = document.getElementById('sim-goal');
+            const simFocusEl = document.getElementById('sim-focus');
+
+            function setupCharts() {
+                const chartOptions = (color) => ({
+                    scales: { x: { display: false }, y: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    maintainAspectRatio: false,
+                });
+                const createChart = (id, color, data) => new Chart(document.getElementById(id), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Value'],
+                        datasets: [{ data: [data], backgroundColor: [color], borderWidth: 1, barPercentage: 1.0, categoryPercentage: 1.0 }]
+                    },
+                    options: chartOptions(color)
+                });
+
+                charts.curiosity = createChart('curiosityChart', 'rgba(79, 70, 229, 0.6)', simData.state.curiosity);
+                charts.boredom = createChart('boredomChart', 'rgba(245, 158, 11, 0.6)', simData.state.boredom);
+                charts.pain = createChart('painChart', 'rgba(220, 38, 38, 0.6)', simData.state.pain);
+            }
+            
+            function updateCharts() {
+                charts.curiosity.data.datasets[0].data[0] = simData.state.curiosity;
+                charts.boredom.data.datasets[0].data[0] = simData.state.boredom;
+                charts.pain.data.datasets[0].data[0] = simData.state.pain;
+                Object.values(charts).forEach(chart => chart.update('none'));
+            }
+
+            function logToSim(message, type = 'info') {
+                 if(simLog.children.length > 20) {
+                    simLog.removeChild(simLog.firstChild);
+                }
+                const p = document.createElement('p');
+                let prefix = 'INFO';
+                let colorClass = 'text-zinc-300';
+                if (type === 'success') {
+                    prefix = '✅ OK'; colorClass = 'text-green-400';
+                } else if (type === 'warn') {
+                    prefix = '⚠️ WARN'; colorClass = 'text-amber-400';
+                } else if (type === 'critical') {
+                    prefix = '🔥 CRITICAL'; colorClass = 'text-red-400';
+                }
+                p.innerHTML = `<span class="${colorClass}">${prefix}:</span> ${message}`;
+                simLog.appendChild(p);
+                simLog.scrollTop = simLog.scrollHeight;
+            }
+
+            function runSimulationCycle() {
+                if (simData.goals.active.length > 0) {
+                    // Goal-directed mode
+                    const goal = simData.goals.active[0];
+                    simData.focus = goal.match(/'(.*?)'/)[1];
+
+                    logToSim(`Goal-directed focus: <strong>${simData.focus}</strong>`);
+                    
+                    // Simulate an LLM interaction
+                    // Let's model a 75% success rate for simple tasks
+                    const shouldFail = Math.random() < 0.25 || simData.state.pain > 50;
+                    
+                    if (goal.includes("Deepen understanding")) {
+                        if(shouldFail) {
+                            logToSim(`LLM response malformed. Rejecting thought.`, 'warn');
+                            simData.state.pain = Math.min(100, simData.state.pain + 25);
+                            if(simData.state.pain >= 80) {
+                                logToSim(`Pain threshold reached for '${simData.focus}'. This is too difficult.`, 'critical');
+                                logToSim(`New Strategy: Break down the concept.`);
+                                simData.goals.active.shift();
+                                simData.goals.active.unshift(`Break down the concept: '${simData.focus}'`);
+                                simData.state.pain = 0;
+                            }
+                        } else {
+                            logToSim(`Successfully understood '${simData.focus}'. Storing memory.`, 'success');
+                            simData.memory.nodes[simData.focus].understood = true;
+                            simData.goals.completed.push(simData.goals.active.shift());
+                            simData.state.pain = Math.max(0, simData.state.pain - 20);
+                        }
+                    } else if(goal.includes("Break down")) {
+                        logToSim(`Successfully broke down '${simData.focus}'.`, 'success');
+                        const subConcepts = [`${simData.focus}-A`, `${simData.focus}-B`];
+                        logToSim(`New sub-concepts discovered: ${subConcepts.join(', ')}`);
+                        simData.goals.active.shift();
+                        subConcepts.reverse().forEach((sc, i) => {
+                            simData.memory.nodes[sc] = { 
+                                x: simData.memory.nodes[simData.focus].x + (i*15 - 10),
+                                y: simData.memory.nodes[simData.focus].y + 25,
+                                understood: false
+                            };
+                             simData.memory.links.push({ source: simData.focus, target: sc });
+                             simData.goals.active.unshift(`Deepen understanding of the concept: '${sc}'`);
+                        });
+                    }
+
+                } else {
+                    // Idle mode
+                    logToSim(`Idle mode. No active goals.`);
+                    simData.state.boredom = Math.min(100, simData.state.boredom + 15);
+                    
+                    if(simData.state.boredom >= 75) {
+                         logToSim(`Boredom threshold reached. Seeking novelty.`, 'critical');
+                         simData.goals.active.push(`Expand knowledge from '${simData.focus}'`);
+                         simData.state.boredom = 0;
+                    } else {
+                        const neighbors = simData.memory.links
+                            .filter(l => l.source === simData.focus || l.target === simData.focus)
+                            .map(l => l.source === simData.focus ? l.target : l.source);
+                        if (neighbors.length > 0) {
+                            simData.focus = neighbors[Math.floor(Math.random() * neighbors.length)];
+                            logToSim(`Mind wanders to: <strong>${simData.focus}</strong>`);
+                        }
+                    }
+                }
+                updateUI();
+            }
+
+            function updateUI() {
+                // Update text
+                simGoalEl.textContent = simData.goals.active[0] || 'None (Idle)';
+                simFocusEl.textContent = simData.focus || '-';
+
+                // Update charts
+                updateCharts();
+                
+                // Update memory map
+                renderMemoryMap();
+            }
+
+            function renderMemoryMap() {
+                const container = document.getElementById('memory-map-container');
+                container.innerHTML = '';
+                const nodes = simData.memory.nodes;
+                const links = simData.memory.links;
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                // Render links first (as lines)
+                links.forEach(link => {
+                    const sourceNode = nodes[link.source];
+                    const targetNode = nodes[link.target];
+                    if (!sourceNode || !targetNode) return;
+
+                    const x1 = sourceNode.x * width / 100;
+                    const y1 = sourceNode.y * height / 100;
+                    const x2 = targetNode.x * width / 100;
+                    const y2 = targetNode.y * height / 100;
+
+                    const length = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+                    const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+
+                    const linkEl = document.createElement('div');
+                    linkEl.className = 'graph-link';
+                    linkEl.style.width = `${length}px`;
+                    linkEl.style.left = `${x1}px`;
+                    linkEl.style.top = `${y1}px`;
+                    linkEl.style.transform = `rotate(${angle}deg)`;
+                    container.appendChild(linkEl);
+                });
+
+                // Render nodes
+                Object.keys(nodes).forEach(nodeId => {
+                    const nodeData = nodes[nodeId];
+                    const nodeEl = document.createElement('div');
+                    nodeEl.className = 'graph-node absolute z-10 p-2 rounded-lg shadow-md flex items-center justify-center border-2';
+                    nodeEl.textContent = nodeId.split('-')[0];
+                    nodeEl.style.left = `calc(${nodeData.x}% - 20px)`;
+                    nodeEl.style.top = `calc(${nodeData.y}% - 20px)`;
+                    
+                    const isUnderstood = nodeData.understood;
+                    nodeEl.style.backgroundColor = isUnderstood ? '#dcfce7' : '#fee2e2'; // green vs red
+                    nodeEl.style.borderColor = isUnderstood ? '#22c55e' : '#ef4444'; // green vs red
+
+                    if (nodeId === simData.focus) {
+                        nodeEl.classList.add('active');
+                    }
+                    container.appendChild(nodeEl);
+                });
+            }
+            
+            function resetSimulation() {
+                simData = JSON.parse(JSON.stringify(initialState));
+                simLog.innerHTML = '<p class="text-zinc-400">Simulation reset. Press "Run Cycle".</p>';
+                updateUI();
+            }
+            
+            // --- INITIALIZATION ---
+            setupCharts();
+            resetSimulation();
+
+            runCycleBtn.addEventListener('click', runSimulationCycle);
+            resetSimBtn.addEventListener('click', resetSimulation);
+            
+            // Ensure map is rendered correctly on resize
+            new ResizeObserver(renderMemoryMap).observe(document.getElementById('memory-map-container'));
+        });
+    </script>
+</body>
+</html>
